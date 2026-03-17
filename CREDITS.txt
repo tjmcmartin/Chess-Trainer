@@ -1,0 +1,95 @@
+Chess Piece Assets
+==================
+
+All chess piece images are from Wikimedia Commons, created by en:User:Cburnett, 
+licensed under CC BY-SA 3.0. Local file names in this project are listed below.
+
+White Pieces
+------------
+
+- Pawn
+  Local file: assets/white_pawn.png
+  Original: Chess plt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363783
+
+- Knight
+  Local file: assets/white_knight.png
+  Original: Chess nlt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363781
+
+- Bishop
+  Local file: assets/white_bishop.png
+  Original: Chess blt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363777
+
+- Rook
+  Local file: assets/white_rook.png
+  Original: Chess rlt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363775
+
+- King
+  Local file: assets/white_king.png
+  Original: Chess klt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363779
+
+- Queen
+  Local file: assets/white_queen.png
+  Original: Chess qlt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363785
+
+Black Pieces
+------------
+
+- Pawn
+  Local file: assets/black_pawn.png
+  Original: Chess pdt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363782
+
+- Knight
+  Local file: assets/black_knight.png
+  Original: Chess ndt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363780
+
+- Bishop
+  Local file: assets/black_bishop.png
+  Original: Chess bdt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363776
+
+- Rook
+  Local file: assets/black_rook.png
+  Original: Chess rdt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363786
+
+- King
+  Local file: assets/black_king.png
+  Original: Chess kdt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363778
+
+- Queen
+  Local file: assets/black_queen.png
+  Original: Chess qdt45.svg
+  Author: en:User:Cburnett
+  License: CC BY-SA 3.0
+  Source: https://commons.wikimedia.org/w/index.php?curid=20363784
