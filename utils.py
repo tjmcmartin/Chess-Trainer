@@ -23,7 +23,7 @@ def get_square_from_coords(x: int, y: int):
         return None
 
     #return the square
-    return chess.square(file, rank - 7)
+    return chess.square(file, 7-rank)
 
 def get_x_from_square(square) -> int:
     return BOARD_START_X + chess.square_file(square)*TILE_SIZE

@@ -10,6 +10,7 @@ class Piece(pygame.sprite.Sprite):
         self.screen = screen
         self.square = square
         self.color = color
+        self.type = type
         self.image = pygame.image.load(f"./assets/{"white" if color else "black"}_{piece_type_map[type]}.png")
         self.rect = self.image.get_rect()
         self.rect.topleft = (get_x_from_square(self.square), get_y_from_square(self.square))
@@ -18,7 +19,7 @@ class Piece(pygame.sprite.Sprite):
         self.screen.blit(self.image, self.rect)
 
     def update_pos(self, square) -> None:
-        
+
         #update the piece's position
         del G.pieces[self.square]
         G.pieces[square] = self
