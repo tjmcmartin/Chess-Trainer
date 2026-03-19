@@ -1,3 +1,5 @@
+import pygame
+
 SCREEN_SIZE: tuple[int, int] = (1280, 720)
 
 TILE_SIZE: int = 75
@@ -7,7 +9,10 @@ BOARD_START_Y: int = 0 #(SCREEN_SIZE[1] - TILE_SIZE*8)
 LIGHT_TILE = (240, 240, 240)
 DARK_TILE  = (31, 95, 173)
 
-SELECTED_HIGHLIGHT   = (255, 215, 64)
-MOVE_HIGHLIGHT = (77, 225, 255)
-CAPTURE    = (200, 60, 60)
-LAST_MOVE  = (255, 235, 120)
+SELECTED_HIGHLIGHT   = (255, 191, 0)
+MOVE_HIGHLIGHT  = (255, 235, 120)
+
+MOVE_DOT = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+pygame.draw.circle(MOVE_DOT, (0, 0, 0, 120), (TILE_SIZE//2, TILE_SIZE//2), TILE_SIZE//5)
+MOVE_CIRCLE = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+pygame.draw.circle(MOVE_CIRCLE, (0, 0, 0, 120), (TILE_SIZE//2, TILE_SIZE//2), TILE_SIZE//2, width=10)

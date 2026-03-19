@@ -26,14 +26,16 @@ running = True
 
 #-------------------------Function Definitions-------------------------
 def is_promotion(move) -> bool:
-    piece = G.pieces.get(move.from_square)
-    if piece is not None and piece.type == chess.PAWN and (
-        (piece.color == chess.WHITE and chess.square_rank(move.to_square) == 7) or
-        (piece.color == chess.BLACK and chess.square_rank(move.to_square) == 0)):
+    #if the move is legal as a promotion
+    temp_move = chess.Move(move.from_square, move.to_square, promotion=chess.QUEEN)
+    if temp_move in board.legal_moves:
+        #it is a promotion move
         return True
     
+    #it isn't a promotion move
     return False
 
+#Function that sets up promotion variables
 def start_promotion(square, color):
     global promotion_pending, promotion_square, promotion_color, promotion_rects
     promotion_pending = True
@@ -41,43 +43,36 @@ def start_promotion(square, color):
     promotion_color = color
 
     promotion_rects = []
-    for i, piece_type in enumerate(promotion_options):
-        rect = pygame.Rect(get_x_from_square(square) + i*TILE_SIZE, get_y_from_square(square), TILE_SIZE, TILE_SIZE)
+    for i in promotion_options:
+        rect = pygame.Rect(get_x_from_square(square), get_y_from_square(square) + i*TILE_SIZE, TILE_SIZE, TILE_SIZE)
         promotion_rects.append(rect)
 
 def draw_promotion_ui(screen):
+    #overlay that darkens the rest of the screen
     overlay = pygame.Surface((TILE_SIZE*8, TILE_SIZE*8), pygame.SRCALPHA)
-    overlay.fill((0, 0, 0, 150))
+    overlay.fill((0, 0, 0, 100))
     screen.blit(overlay, (BOARD_START_X, BOARD_START_Y))
 
+    #create a square for each promotion option
     for i, piece_type in enumerate(promotion_options):
         rect = promotion_rects[i]
         piece_image = pygame.image.load(f"./assets/{"white" if promotion_color else "black"}_{piece_type_map[piece_type]}.png")
+        pygame.draw.rect(screen, (255, 255, 255), promotion_rects[i])
         screen.blit(piece_image, rect.topleft)
 
-
-def choose_promotion(rects, options):
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                for rect, piece_type in zip(rects, options):
-                    if rect.collidepoint(mouse_pos):
-                        return piece_type
-                    # else:
-                    #     return None
-
 def promote(move, piece_type) -> None:
+    #deselect the piece
     deselect()
 
+    #remove the pawn
     pawn = G.pieces[move.from_square]
     pawn.kill()
     del G.pieces[move.from_square]
 
+    #replace it with the user's piece choice
     G.pieces[move.to_square] = Piece(screen, piece_type, board.turn, move.to_square)
 
+    #move the piece on the internal board
     board.push(move)
 
 def execute_move(move, captured_piece):
@@ -91,20 +86,40 @@ def execute_move(move, captured_piece):
         captured_piece.kill()
         del G.pieces[captured_piece.square]
 
+    #if this isn't the first move
+    if board.move_stack:
+
+        #get the last move and undo it's highlights
+        last_move = board.peek()
+        G.tiles[last_move.from_square].reset_colors()
+        G.tiles[last_move.to_square].reset_colors()  
+
+    #highlight the move that was just made
+    G.tiles[move.from_square].highlight_last_move()
+    G.tiles[move.to_square].highlight_last_move()
+
     #move the piece in the internal board
     board.push(move)
 
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
 
+
 def deselect() -> None:
+
+    #get the global variable
+    global selected_piece
+
     if selected_piece is not None:
         #unhighlight all the tiles highlighted as possible moves
         for move in get_moves(selected_piece):
-            G.tiles[move.to_square].reset_colors()
+            G.tiles[move.to_square].unhighlight_move()
         
         #deselect the tile the selected piece was on
         G.tiles[selected_piece.square].reset_colors()
+
+    #deselect the piece
+    selected_piece = None
 
 def select(piece) -> None:
 
@@ -156,17 +171,28 @@ while running:
             #get the mouse position
             mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
 
-            if promotion_pending:
+            #if we are waiting on a promotion selection from the user
+            if promotion_pending and selected_piece is not None and promotion_square is not None:
+                #for each of the promotion choices
                 for rect, piece_type in zip(promotion_rects, promotion_options):
+                    #if the rectangle got clicked
                     if rect.collidepoint(mouse_pos):
+                        #promote the right piece
                         move = chess.Move(selected_piece.square, promotion_square, promotion=piece_type)
                         promote(move, piece_type)
+                        break
+                #if no choice was selected
+                else:
+                    #deselect the piece
+                    deselect()
 
-                        promotion_pending = False
-                        promotion_square = None
-                        promotion_color = None
-                        promotion_rects = []
+                #take away the promotion ui
+                promotion_pending = False
+                promotion_square = None
+                promotion_color = None
+                promotion_rects = []
 
+            #if were aren't waiting for promotion selection
             else:
                 #get the square that got clicked
                 square = get_square_from_coords(mouse_pos[0], mouse_pos[1])
@@ -198,7 +224,9 @@ while running:
                             #create a move from the selected piece to the clicked square
                             move = chess.Move(selected_piece.square, square)
 
+                            #if the move is attempting prmotion
                             if is_promotion(move):
+                                #start promotion piece selection process
                                 start_promotion(square, board.turn)
                             #if the move is legal
                             elif move in board.legal_moves:
@@ -242,11 +270,6 @@ while running:
                                     rook = G.pieces.get(rook_from)
                                     if rook is not None:
                                         rook.update_pos(rook_to)
-                                
-
-
-
-
 
                                 #execute the move
                                 execute_move(move, captured_piece)
@@ -255,14 +278,18 @@ while running:
                                 #deselecte the selected piece
                                 deselect()
 
+    #fill the screen
     screen.fill("black")
 
+    #update the board tiles
     for tile in G.tiles.values():
-        tile.update()
+        tile.update(board)
 
+    #update the visual pieces
     for piece in G.pieces.values():
         piece.update()
 
+    #if we are wiating on promotion, update the promotion ui
     if promotion_pending:
         draw_promotion_ui(screen)
 
