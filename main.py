@@ -1,11 +1,25 @@
 import pygame
 import chess
+import chess.pgn
 from settings import SCREEN_SIZE, TILE_SIZE, BOARD_START_X, BOARD_START_Y
 from piece import Piece
 from tile import Tile
+from ui import Left_Panel
 from utils import get_square_from_coords, get_x_from_square, get_y_from_square, piece_type_map
 import globals as G
 #------------------------------Globals------------------------------
+
+game = chess.pgn.Game()
+
+game.headers["Event"] = "Opening Trainer"
+game.headers["Site"] = "My App"
+# game.headers["Date"] = ""
+game.headers["Round"] = "-"
+game.headers["White"] = "User"
+game.headers["Black"] = "Trainer Bot"
+game.headers["Result"] = "*"
+
+node = game
 
 board = chess.Board()
 
@@ -23,6 +37,8 @@ pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 running = True
+
+move_tree_ui = Left_Panel(screen)
 
 #-------------------------Function Definitions-------------------------
 def is_promotion(move) -> bool:
@@ -61,6 +77,9 @@ def draw_promotion_ui(screen):
         screen.blit(piece_image, rect.topleft)
 
 def promote(move, piece_type) -> None:
+
+    global node
+
     #deselect the piece
     deselect()
 
@@ -74,8 +93,12 @@ def promote(move, piece_type) -> None:
 
     #move the piece on the internal board
     board.push(move)
+    node = node.add_variation(move)
 
-def execute_move(move, captured_piece):
+def execute_move(move, captured_piece) -> None:
+
+    global node, move_tree_ui
+
     #deselect the piece
     deselect()
 
@@ -99,7 +122,9 @@ def execute_move(move, captured_piece):
     G.tiles[move.to_square].highlight_last_move()
 
     #move the piece in the internal board
+    move_tree_ui.update_text(board.san(move))
     board.push(move)
+    node = node.add_variation(move)
 
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
@@ -293,11 +318,17 @@ while running:
     if promotion_pending:
         draw_promotion_ui(screen)
 
+    move_tree_ui.update()
+
     #display the screen
     pygame.display.flip()
 
     #cap fps to 60
     clock.tick(60)
+
+#store the data
+with open("./openings/test.pgn", "w") as f:
+    print(game, file=f)
 
 #if the loop stops, quite the program
 pygame.quit()

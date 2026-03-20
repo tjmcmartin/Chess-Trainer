@@ -3,7 +3,8 @@ import pygame
 SCREEN_SIZE: tuple[int, int] = (1280, 720)
 
 TILE_SIZE: int = 75
-BOARD_START_X: int = (SCREEN_SIZE[0] - TILE_SIZE*8) // 2 
+BOARD_SIZE = TILE_SIZE*8
+BOARD_START_X: int = (SCREEN_SIZE[0] - BOARD_SIZE) // 2 
 BOARD_START_Y: int = 0 #(SCREEN_SIZE[1] - TILE_SIZE*8) 
 
 LIGHT_TILE = (240, 240, 240)
