@@ -122,7 +122,7 @@ def execute_move(move, captured_piece) -> None:
     G.tiles[move.to_square].highlight_last_move()
 
     #move the piece in the internal board
-    move_tree_ui.update_text(board.san(move))
+    move_tree_ui.add_node(move, board.san(move))
     board.push(move)
     node = node.add_variation(move)
 
@@ -195,6 +195,12 @@ while running:
 
             #get the mouse position
             mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
+
+            if move_tree_ui.head is not None:
+                nodes = move_tree_ui.head.get_children()
+                for child in nodes:
+                    if child.get_clicked(mouse_pos):
+                        print("Clicked!")
 
             #if we are waiting on a promotion selection from the user
             if promotion_pending and selected_piece is not None and promotion_square is not None:
