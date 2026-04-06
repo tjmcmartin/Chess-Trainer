@@ -1,5 +1,6 @@
 import pygame
 from settings import BOARD_START_X, SCREEN_SIZE
+from utils import width_of_space
 
 class Left_Panel():
     def __init__(self, screen) -> None:
@@ -38,11 +39,20 @@ class Left_Panel():
     #     text = self.font.render(self.text, True, (255, 255, 255))
     #     self.surface.blit(text, (0, 0))
 
+    def change_position(self, node) -> None:
+        if self.node == node:
+            return
+        
+        self.node = node
+        print("change position!")
+
     def update(self):
-        self.screen.blit(self.surface, (0, 0))
+        self.surface.fill("black")
 
         if self.head is not None:
-            self.head.update()
+            self.head.update(self.node)
+        
+        self.screen.blit(self.surface, (0, 0))
     
 class Node():
     def __init__(self, surface, parent, move, text):
@@ -62,17 +72,21 @@ class Node():
             self.depth = 1
             self.x = 0
             self.y = 0
+        
+        self.rect.topleft = (self.x, self.y)
 
         print(self.rect, self.depth)
 
         self.children: list[Node] = []
 
-    def update(self):
-
+    def update(self, current_node):
+        if self == current_node:
+            offset = width_of_space(self.font)/2
+            pygame.draw.rect(self.surface, (70, 90, 130), pygame.Rect((self.x - offset, self.y), self.rect.size))
         self.surface.blit(self.text, (self.x, self.y))
 
         for node in self.children:
-            node.update()
+            node.update(current_node)
     
     def get_clicked(self, mouse_pos: tuple[int, int]) -> bool:
         return self.rect.collidepoint(mouse_pos)

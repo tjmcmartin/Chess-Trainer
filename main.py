@@ -190,8 +190,18 @@ while running:
         #Quit the game if they close the game
         if event.type == pygame.QUIT:
             running = False
+        #check for key presses
+        elif event.type == pygame.KEYDOWN:
+            current_node = move_tree_ui.node
+            if current_node is not None:
+                if event.key == pygame.K_LEFT:
+                    if current_node.parent is not None:
+                        move_tree_ui.change_position(current_node.parent)
+                elif event.key == pygame.K_RIGHT:
+                    if current_node.children != []:
+                        move_tree_ui.change_position(current_node.children[0])
         #If the clike the mouse
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN:
 
             #get the mouse position
             mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
@@ -200,7 +210,7 @@ while running:
                 nodes = move_tree_ui.head.get_children()
                 for child in nodes:
                     if child.get_clicked(mouse_pos):
-                        print("Clicked!")
+                        move_tree_ui.change_position(child)
 
             #if we are waiting on a promotion selection from the user
             if promotion_pending and selected_piece is not None and promotion_square is not None:

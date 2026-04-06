@@ -33,3 +33,7 @@ def get_y_from_square(square) -> int:
 
 def is_tile_white(square) -> bool:
     return (chess.square_file(square) + chess.square_rank(square)) %2 == 0
+
+def width_of_space(font) -> int:
+    space = font.render(" ", True, (255, 255, 255))
+    return space.get_width()
