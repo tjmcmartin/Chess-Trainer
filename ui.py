@@ -15,7 +15,7 @@ class Left_Panel():
     def add_node(self, move, san):
         if self.node is not None:
             previous = self.node
-            self.node = Node(self.surface, previous, move, san, )
+            self.node = Node(self.surface, previous, move, san)
             previous.children.append(self.node)
         else:
             self.head = Node(self.surface, None, move, san)
@@ -74,8 +74,6 @@ class Node():
             self.y = 0
         
         self.rect.topleft = (self.x, self.y)
-
-        print(self.rect, self.depth)
 
         self.children: list[Node] = []
 
