@@ -1,6 +1,6 @@
 import pygame
 import chess
-from settings import BOARD_START_X, SCREEN_SIZE
+from settings import BOARD_START_X, SCREEN_SIZE, LEFT_PANEL_MARGIN
 from utils import width_of_space
 
 class Left_Panel():
@@ -61,15 +61,9 @@ class Node():
         self.parent: Node = parent
         self.move = move
         self.color = color
-        
+        self.depth = 1
         if parent is not None:
             self.depth: int = parent.depth + 1
-            self.x = parent.x + parent.rect.width
-            self.y = parent.y
-        else:
-            self.depth = 1
-            self.x = 0
-            self.y = 0
     
         self.font = pygame.font.SysFont("default", 30)
         if self.color == chess.WHITE:
@@ -77,6 +71,8 @@ class Node():
 
         self.text = self.font.render(text + " ", True, (255, 255, 255))
         self.rect = self.text.get_rect()
+        
+        self.x, self.y = self.create_coords(self.parent)
         
         self.rect.topleft = (self.x, self.y)
 
@@ -105,3 +101,25 @@ class Node():
             nodes = node.get_children(nodes = nodes)
 
         return nodes
+
+    def create_coords(self, parent) -> tuple[int, int]:
+
+        if parent is None:
+            return LEFT_PANEL_MARGIN, 0
+
+        x = parent.x
+        y = parent.y
+
+        temp_x = x + parent.text.get_width()
+
+        #check if wrapping is needed
+        if temp_x + self.text.get_width() > self.surface.get_width() + LEFT_PANEL_MARGIN:
+            #put it on a new line
+            y += 20
+            x = LEFT_PANEL_MARGIN
+        #if wrapping is not needed
+        else:
+            #shift the x over by the parent's width
+            x = temp_x
+
+        return x, y
