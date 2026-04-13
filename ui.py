@@ -1,4 +1,5 @@
 import pygame
+import chess
 from settings import BOARD_START_X, SCREEN_SIZE
 from utils import width_of_space
 
@@ -12,13 +13,13 @@ class Left_Panel():
         self.head = None
         self.node = None
 
-    def add_node(self, move, san):
+    def add_node(self, move, san, color):
         if self.node is not None:
             previous = self.node
-            self.node = Node(self.surface, previous, move, san)
+            self.node = Node(self.surface, previous, move, san, color)
             previous.children.append(self.node)
         else:
-            self.head = Node(self.surface, None, move, san)
+            self.head = Node(self.surface, None, move, san, color)
             self.node = self.head
         return self.node
 
@@ -55,15 +56,12 @@ class Left_Panel():
         self.screen.blit(self.surface, (0, 0))
     
 class Node():
-    def __init__(self, surface, parent, move, text):
+    def __init__(self, surface, parent, move, text, color):
         self.surface = surface
         self.parent: Node = parent
         self.move = move
-        self.font = pygame.font.SysFont("default", 30)
-        self.text = self.font.render(text + " ", True, (255, 255, 255))
-        self.rect = self.text.get_rect()
-
-
+        self.color = color
+        
         if parent is not None:
             self.depth: int = parent.depth + 1
             self.x = parent.x + parent.rect.width
@@ -72,6 +70,13 @@ class Node():
             self.depth = 1
             self.x = 0
             self.y = 0
+    
+        self.font = pygame.font.SysFont("default", 30)
+        if self.color == chess.WHITE:
+            text = str( (self.depth+1) // 2 ) + ". " + text
+
+        self.text = self.font.render(text + " ", True, (255, 255, 255))
+        self.rect = self.text.get_rect()
         
         self.rect.topleft = (self.x, self.y)
 

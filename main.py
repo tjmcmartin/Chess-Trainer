@@ -122,7 +122,7 @@ def execute_move(move, captured_piece) -> None:
     G.tiles[move.to_square].highlight_last_move()
 
     #move the piece in the internal board
-    move_tree_ui.add_node(move, board.san(move))
+    move_tree_ui.add_node(move, board.san(move), board.turn)
     board.push(move)
     node = node.add_variation(move)
 
