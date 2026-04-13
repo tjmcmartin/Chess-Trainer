@@ -14,11 +14,21 @@ class Left_Panel():
         self.node = None
 
     def add_node(self, move, san, color):
+        #if there is a node
         if self.node is not None:
-            previous = self.node
-            self.node = Node(self.surface, previous, move, san, color)
-            previous.children.append(self.node)
+
+            #if the current node has no children
+            if self.node.children == []:
+                previous = self.node
+                self.node = Node(self.surface, previous, move, san, color)
+                previous.children.append(self.node)
+            #if the current node has children
+            else:
+                #create a new branch
+                print("Branch!")
+        #if there isn't already a node
         else:
+            #create the head
             self.head = Node(self.surface, None, move, san, color)
             self.node = self.head
         return self.node
