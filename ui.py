@@ -1,6 +1,6 @@
 import pygame
 import chess
-from settings import BOARD_START_X, SCREEN_SIZE, LEFT_PANEL_MARGIN
+from settings import BOARD_START_X, SCREEN_SIZE, LEFT_PANEL_MARGIN, NEW_LINE_SIZE, BRANCH_INDENT_SIZE
 from utils import width_of_space
 
 class Left_Panel():
@@ -19,13 +19,12 @@ class Left_Panel():
 
             #if the current ui_node has no children
             if self.ui_node.children == []:
-                previous = self.ui_node
-                self.ui_node = UI_Node(self.surface, previous, move, san, color, node)
-                previous.children.append(self.ui_node)
-            #if the current ui_node has children
+                new_ui_node = UI_Node(self.surface, self.ui_node, move, san, color, node)
             else:
-                #create a new branch
-                print("Branch!")
+                new_ui_node = UI_Node(self.surface, self.ui_node, move, san, color, node, new_branch=True)
+            self.ui_node.children.append(new_ui_node)
+            self.ui_node = new_ui_node
+            #if the current ui_node has children
         #if there isn't already a ui_node
         else:
             #create the head
@@ -42,7 +41,7 @@ class Left_Panel():
         self.screen.blit(self.surface, (0, 0))
     
 class UI_Node():
-    def __init__(self, surface, parent, move, text, color, node):
+    def __init__(self, surface, parent, move, text, color, node, /, new_branch=False):
         self.game_node = node
         self.surface = surface
         self.parent: UI_Node = parent
@@ -54,12 +53,14 @@ class UI_Node():
     
         self.font = pygame.font.SysFont("default", 30)
         if self.color == chess.WHITE:
-            text = str( (self.depth+1) // 2 ) + ". " + text
+            text = str( (self.depth+1) // 2 ) + "." + text
+        elif new_branch and self.color == chess.BLACK:
+            text = str(self.depth//2) + "..." + text
 
         self.text = self.font.render(text + " ", True, (255, 255, 255))
         self.rect = self.text.get_rect()
         
-        self.x, self.y = self.create_coords(self.parent)
+        self.x, self.y = self.create_coords(self.parent, new_branch)
         
         self.rect.topleft = (self.x, self.y)
 
@@ -89,7 +90,7 @@ class UI_Node():
 
         return ui_nodes
 
-    def create_coords(self, parent) -> tuple[int, int]:
+    def create_coords(self, parent, new_branch=False) -> tuple[int, int]:
 
         if parent is None:
             return LEFT_PANEL_MARGIN, 0
@@ -97,16 +98,21 @@ class UI_Node():
         x = parent.x
         y = parent.y
 
-        temp_x = x + parent.text.get_width()
+        if new_branch:
+            x = LEFT_PANEL_MARGIN + BRANCH_INDENT_SIZE
+            y += NEW_LINE_SIZE
 
-        #check if wrapping is needed
-        if temp_x + self.text.get_width() > self.surface.get_width() + LEFT_PANEL_MARGIN:
-            #put it on a new line
-            y += 20
-            x = LEFT_PANEL_MARGIN
-        #if wrapping is not needed
         else:
-            #shift the x over by the parent's width
-            x = temp_x
+            temp_x = x + parent.text.get_width()
+
+            #check if wrapping is needed
+            if temp_x + self.text.get_width() > self.surface.get_width() + LEFT_PANEL_MARGIN:
+                #put it on a new line
+                y += NEW_LINE_SIZE
+                x = LEFT_PANEL_MARGIN
+            #if wrapping is not needed
+            else:
+                #shift the x over by the parent's width
+                x = temp_x
 
         return x, y
