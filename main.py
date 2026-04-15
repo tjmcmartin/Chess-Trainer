@@ -122,22 +122,22 @@ def execute_move(move, captured_piece) -> None:
     G.tiles[move.to_square].highlight_last_move()
 
     #move the piece in the internal board
-    move_tree_ui.add_ui_node(move, board.san(move), board.turn)
-    board.push(move)
     node = node.add_variation(move)
+    move_tree_ui.add_ui_node(node, move, board.san(move), board.turn)
+    board.push(move)
 
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
 
 def undo_move(move):
 
-    board.pop()
+    global board
 
-    captured_piece = board.piece_at(move.to_square)
+    node = move_tree_ui.ui_node.game_node
 
-    #replace the piece that was captured
-    if captured_piece is not None:
-        Piece(screen, captured_piece.piece_type, not board.turn, move.to_square)
+    #set up the new board
+    board = node.board()
+    rebuild_board()
 
     #unhighligh the move that is currently highlighted
     G.tiles[move.to_square].reset_colors()
@@ -215,27 +215,39 @@ def get_captured_piece(move):
 
 def change_position(ui_node):
 
+    global node, board
+
     current_ui_node = move_tree_ui.ui_node
+    last_move = current_ui_node.move
 
     if ui_node == current_ui_node:
         return
-    
-    move_diff = ui_node.depth - board.ply()
 
-    if move_diff > 0:
-        if move_diff == 1:
-            execute_move(ui_node.move, get_captured_piece(ui_node.move))
-        else:
-            print("Big jump forward!")
-    elif move_diff < 0:
-        if move_diff == -1:
-            undo_move(current_ui_node.move)
-        else:
-            print("Big jump backward!")
+    for tile in G.tiles.values():
+        tile.reset_colors()
 
     move_tree_ui.ui_node = ui_node
+    node = ui_node.game_node
+    board = node.board()
+    rebuild_board()
 
-#set up the board
+    if board.move_stack:
+        last_move = board.peek()
+        G.tiles[last_move.to_square].highlight_last_move()
+        G.tiles[last_move.from_square].highlight_last_move()
+
+
+def rebuild_board():
+
+    G.pieces.clear()
+
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+
+        if piece is not None:
+            G.pieces[square] = Piece(screen, piece.piece_type, piece.color, square)
+
+
 #for each square on the board
 for square in chess.SQUARES:
     

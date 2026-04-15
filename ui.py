@@ -13,14 +13,14 @@ class Left_Panel():
         self.head = None
         self.ui_node = None
 
-    def add_ui_node(self, move, san, color):
+    def add_ui_node(self, node, move, san, color):
         #if there is a ui_node
         if self.ui_node is not None:
 
             #if the current ui_node has no children
             if self.ui_node.children == []:
                 previous = self.ui_node
-                self.ui_node = UI_Node(self.surface, previous, move, san, color)
+                self.ui_node = UI_Node(self.surface, previous, move, san, color, node)
                 previous.children.append(self.ui_node)
             #if the current ui_node has children
             else:
@@ -29,26 +29,9 @@ class Left_Panel():
         #if there isn't already a ui_node
         else:
             #create the head
-            self.head = UI_Node(self.surface, None, move, san, color)
+            self.head = UI_Node(self.surface, None, move, san, color, node)
             self.ui_node = self.head
         return self.ui_node
-
-    # def update_text(self, san):
-    #     #split the text into lines and get the last line
-    #     lines = self.text.split("\n")
-    #     last_line = lines[-1] if lines else ""
-
-
-    #     line_width, _ = self.font.size(last_line + " " + san)
-    #     sep = " "
-
-    #     if line_width > self.rect.width:
-    #         sep = "\n"
-
-    #     self.text = sep.join([self.text, san])
-
-    #     text = self.font.render(self.text, True, (255, 255, 255))
-    #     self.surface.blit(text, (0, 0))
 
     def change_position(self, board, ui_node) -> None:
         if self.ui_node == ui_node:
@@ -80,7 +63,8 @@ class Left_Panel():
         self.screen.blit(self.surface, (0, 0))
     
 class UI_Node():
-    def __init__(self, surface, parent, move, text, color):
+    def __init__(self, surface, parent, move, text, color, node):
+        self.game_node = node
         self.surface = surface
         self.parent: UI_Node = parent
         self.move = move
