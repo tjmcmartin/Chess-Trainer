@@ -122,13 +122,36 @@ def execute_move(move, captured_piece) -> None:
     G.tiles[move.to_square].highlight_last_move()
 
     #move the piece in the internal board
-    move_tree_ui.add_node(move, board.san(move), board.turn)
+    move_tree_ui.add_ui_node(move, board.san(move), board.turn)
     board.push(move)
     node = node.add_variation(move)
 
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
 
+def undo_move(move):
+
+    board.pop()
+
+    captured_piece = board.piece_at(move.to_square)
+
+    #replace the piece that was captured
+    if captured_piece is not None:
+        Piece(screen, captured_piece.piece_type, not board.turn, move.to_square)
+
+    #unhighligh the move that is currently highlighted
+    G.tiles[move.to_square].reset_colors()
+    G.tiles[move.from_square].reset_colors()
+
+    #update the visual board
+    G.pieces[move.to_square].update_pos(move.from_square)
+
+    #if there is a another move before this one, highlight it
+    if board.move_stack:
+
+        last_move = board.peek()
+        G.tiles[last_move.to_square].highlight_last_move()
+        G.tiles[last_move.from_square].highlight_last_move()
 
 def deselect() -> None:
 
@@ -166,6 +189,52 @@ def get_moves(piece) -> list:
 
     return moves
 
+def get_captured_piece(move):
+    if not board.is_capture(move):
+        return None
+
+    #if the move is en passent
+    if board.is_en_passant(move):
+        #if it is white's turn
+        if board.turn:
+            #get the square one below where the pawn moved
+            pawn_square = move.to_square -8
+        #if it is black's turn
+        else:
+            #get the square one above where the pawn moved
+            pawn_square = move.to_square + 8
+        
+        #set that square as the captured peice
+        captured_piece = G.pieces.get(pawn_square)
+
+    #if the move is just a normal capture
+    else:
+        captured_piece = G.pieces.get(move.to_square)
+
+    return captured_piece
+
+def change_position(ui_node):
+
+    current_ui_node = move_tree_ui.ui_node
+
+    if ui_node == current_ui_node:
+        return
+    
+    move_diff = ui_node.depth - board.ply()
+
+    if move_diff > 0:
+        if move_diff == 1:
+            execute_move(ui_node.move, get_captured_piece(ui_node.move))
+        else:
+            print("Big jump forward!")
+    elif move_diff < 0:
+        if move_diff == -1:
+            undo_move(current_ui_node.move)
+        else:
+            print("Big jump backward!")
+
+    move_tree_ui.ui_node = ui_node
+
 #set up the board
 #for each square on the board
 for square in chess.SQUARES:
@@ -192,14 +261,14 @@ while running:
             running = False
         #check for key presses
         elif event.type == pygame.KEYDOWN:
-            current_node = move_tree_ui.node
-            if current_node is not None:
+            current_ui_node = move_tree_ui.ui_node
+            if current_ui_node is not None:
                 if event.key == pygame.K_LEFT:
-                    if current_node.parent is not None:
-                        move_tree_ui.change_position(current_node.parent)
+                    if current_ui_node.parent is not None:
+                        change_position(current_ui_node.parent)
                 elif event.key == pygame.K_RIGHT:
-                    if current_node.children != []:
-                        move_tree_ui.change_position(current_node.children[0])
+                    if current_ui_node.children != []:
+                        change_position(current_ui_node.children[0])
         #If the clike the mouse
         elif event.type == pygame.MOUSEBUTTONDOWN:
 
@@ -207,10 +276,10 @@ while running:
             mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
 
             if move_tree_ui.head is not None:
-                nodes = move_tree_ui.head.get_children()
-                for child in nodes:
+                ui_nodes = move_tree_ui.head.get_children()
+                for child in ui_nodes:
                     if child.get_clicked(mouse_pos):
-                        move_tree_ui.change_position(child)
+                        change_position(child)
 
             #if we are waiting on a promotion selection from the user
             if promotion_pending and selected_piece is not None and promotion_square is not None:
@@ -272,32 +341,11 @@ while running:
                             #if the move is legal
                             elif move in board.legal_moves:
                                 
-                                #default value if it isn't a capture
-                                captured_piece = None
-
-                                #if the moves is a capture
-                                if board.is_capture(move):
-
-                                    #if the move is en passent
-                                    if board.is_en_passant(move):
-                                        #if it is white's turn
-                                        if board.turn:
-                                            #get the square one below where the pawn moved
-                                            pawn_square = move.to_square -8
-                                        #if it is black's turn
-                                        else:
-                                            #get the square one above where the pawn moved
-                                            pawn_square = move.to_square + 8
-                                        
-                                        #set that square as the captured peice
-                                        captured_piece = G.pieces.get(pawn_square)
-
-                                    #if the move is just a normal capture
-                                    else:
-                                        captured_piece = G.pieces.get(move.to_square)
+                                #get the captured piece if it exists
+                                captured_piece = get_captured_piece(move)
 
                                 #if the moves is castling
-                                elif board.is_castling(move):
+                                if board.is_castling(move):
                                     #check if the king castled queenside
                                     if chess.square_file(move.to_square) == 2:
                                         rook_from = move.to_square - 2
@@ -341,6 +389,8 @@ while running:
 
     #cap fps to 60
     clock.tick(60)
+
+print(game)
 
 #store the data
 with open("./openings/test.pgn", "w") as f:
