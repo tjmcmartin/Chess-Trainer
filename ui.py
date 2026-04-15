@@ -33,27 +33,6 @@ class Left_Panel():
             self.ui_node = self.head
         return self.ui_node
 
-    def change_position(self, board, ui_node) -> None:
-        if self.ui_node == ui_node:
-            return
-        
-        self.ui_node = ui_node
-        
-        move_diff = ui_node.depth - board.ply()
-
-        if move_diff > 0:
-            if move_diff == 1:
-                board.push(ui_node.move)
-            else:
-                print("Big jump forward!")
-        elif move_diff < 0:
-            if move_diff == -1:
-                board.pop()
-            else:
-                print("Big jump backward!")
-
-
-
     def update(self):
         self.surface.fill("black")
 

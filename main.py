@@ -15,8 +15,8 @@ game.headers["Event"] = "Opening Trainer"
 game.headers["Site"] = "My App"
 # game.headers["Date"] = ""
 game.headers["Round"] = "-"
-game.headers["White"] = "User"
-game.headers["Black"] = "Trainer Bot"
+game.headers["White"] = "Student"
+game.headers["Black"] = "Wizzard Bot"
 game.headers["Result"] = "*"
 
 node = game
@@ -128,30 +128,6 @@ def execute_move(move, captured_piece) -> None:
 
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
-
-def undo_move(move):
-
-    global board
-
-    node = move_tree_ui.ui_node.game_node
-
-    #set up the new board
-    board = node.board()
-    rebuild_board()
-
-    #unhighligh the move that is currently highlighted
-    G.tiles[move.to_square].reset_colors()
-    G.tiles[move.from_square].reset_colors()
-
-    #update the visual board
-    G.pieces[move.to_square].update_pos(move.from_square)
-
-    #if there is a another move before this one, highlight it
-    if board.move_stack:
-
-        last_move = board.peek()
-        G.tiles[last_move.to_square].highlight_last_move()
-        G.tiles[last_move.from_square].highlight_last_move()
 
 def deselect() -> None:
 
@@ -401,8 +377,6 @@ while running:
 
     #cap fps to 60
     clock.tick(60)
-
-print(game)
 
 #store the data
 with open("./openings/test.pgn", "w") as f:
