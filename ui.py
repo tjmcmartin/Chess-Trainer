@@ -19,12 +19,14 @@ class Left_Panel():
 
             #if the current ui_node has no children
             if self.ui_node.children == []:
+                #create a ui node normally
                 new_ui_node = UI_Node(self.surface, self.ui_node, move, san, color, node)
+            #if the ui node already has children
             else:
+                #create a new branch
                 new_ui_node = UI_Node(self.surface, self.ui_node, move, san, color, node, new_branch=True)
             self.ui_node.children.append(new_ui_node)
             self.ui_node = new_ui_node
-            #if the current ui_node has children
         #if there isn't already a ui_node
         else:
             #create the head
@@ -78,6 +80,19 @@ class UI_Node():
     def get_clicked(self, mouse_pos: tuple[int, int]) -> bool:
         return self.rect.collidepoint(mouse_pos)
     
+    def get_branch_depth(self):
+        depth = 0
+
+        if self.parent is None:
+            return 0
+
+        if self.parent.children.__len__() > 1:
+            depth += 1
+
+        new_depth = self.parent.get_branch_depth()
+
+        return depth + new_depth
+    
     def get_children(self, /, ui_nodes = None):
 
         if ui_nodes is None:
@@ -89,20 +104,34 @@ class UI_Node():
             ui_nodes = ui_node.get_children(ui_nodes = ui_nodes)
 
         return ui_nodes
+    
+    def get_branch_height(self) -> int:
+
+        if self.children == []:
+            return self.y
+        else:
+            return self.children[-1].get_branch_height()
 
     def create_coords(self, parent, new_branch=False) -> tuple[int, int]:
 
+        #if there is no parent
         if parent is None:
+            #return the coordinates of where the first node should go
             return LEFT_PANEL_MARGIN, 0
 
+        #temporarily set cordinates to the parent's values
         x = parent.x
         y = parent.y
 
+        #if this node is starting a new branch
         if new_branch:
-            x = LEFT_PANEL_MARGIN + BRANCH_INDENT_SIZE
-            y += NEW_LINE_SIZE
-
+            #set the x indent depending on the depth
+            x = LEFT_PANEL_MARGIN + BRANCH_INDENT_SIZE * (1 + self.parent.get_branch_depth())
+            #set the y value below all branches from the same parent
+            y = parent.get_branch_height() + NEW_LINE_SIZE
+        #if the node is not a new branch
         else:
+            #create a test x value
             temp_x = x + parent.text.get_width()
 
             #check if wrapping is needed
