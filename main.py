@@ -29,6 +29,8 @@ promotion_color = None
 promotion_rects = []
 promotion_options = [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT]
 
+training = False
+
 #keep track of which piece is highlighted
 selected_piece = None
 
@@ -261,7 +263,7 @@ while running:
         #check for key presses
         elif event.type == pygame.KEYDOWN:
             current_ui_node = G.move_tree_ui.ui_node
-            if current_ui_node is not None:
+            if current_ui_node is not None and not training:
                 if event.key == pygame.K_LEFT:
                     if current_ui_node.parent is not None:
                         change_position(current_ui_node.parent)
@@ -274,7 +276,8 @@ while running:
             #get the mouse position
             mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
 
-            if G.move_tree_ui.head is not None:
+            #check if a ui node was clicked
+            if G.move_tree_ui.head is not None and not training:
                 ui_nodes = G.move_tree_ui.head.get_children()
                 for child in ui_nodes:
                     if child.get_clicked(mouse_pos):
