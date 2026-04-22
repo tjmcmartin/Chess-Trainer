@@ -32,7 +32,6 @@ class Left_Panel():
             #create the head
             self.head = UI_Node(self.surface, None, move, san, color, node)
             self.ui_node = self.head
-        return self.ui_node
 
     def update(self):
         self.surface.fill("black")

@@ -19,7 +19,7 @@ game.headers["White"] = "Student"
 game.headers["Black"] = "Wizzard Bot"
 game.headers["Result"] = "*"
 
-node = game
+G.node = game
 
 board = chess.Board()
 
@@ -38,7 +38,7 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 running = True
 
-move_tree_ui = Left_Panel(screen)
+G.move_tree_ui = Left_Panel(screen)
 
 #-------------------------Function Definitions-------------------------
 def is_promotion(move) -> bool:
@@ -77,9 +77,6 @@ def draw_promotion_ui(screen):
         screen.blit(piece_image, rect.topleft)
 
 def promote(move, piece_type) -> None:
-
-    global node
-
     #deselect the piece
     deselect()
 
@@ -93,12 +90,9 @@ def promote(move, piece_type) -> None:
 
     #move the piece on the internal board
     board.push(move)
-    node = node.add_variation(move)
+    G.node = G.node.add_variation(move)
 
 def execute_move(move, captured_piece) -> None:
-
-    global node, move_tree_ui
-
     #deselect the piece
     deselect()
 
@@ -122,12 +116,29 @@ def execute_move(move, captured_piece) -> None:
     G.tiles[move.to_square].highlight_last_move()
 
     #move the piece in the internal board
-    node = node.add_variation(move)
-    move_tree_ui.add_ui_node(node, move, board.san(move), board.turn)
+    node = new_node(G.node, move)
+    if node is None:
+        G.node = G.node.add_variation(move)
+        G.move_tree_ui.add_ui_node(G.node, move, board.san(move), board.turn)
+    else:
+        G.node = node
+        for child in G.move_tree_ui.ui_node.children:
+            if child.game_node is node:
+                G.move_tree_ui.ui_node = child
+                break
     board.push(move)
 
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
+
+def new_node(parent, move) -> bool:
+
+    for child in parent.variations:
+        if child.move == move:
+            return child
+    
+    return None
+        
 
 def deselect() -> None:
 
@@ -191,9 +202,9 @@ def get_captured_piece(move):
 
 def change_position(ui_node):
 
-    global node, board
+    global board
 
-    current_ui_node = move_tree_ui.ui_node
+    current_ui_node = G.move_tree_ui.ui_node
     last_move = current_ui_node.move
 
     if ui_node == current_ui_node:
@@ -202,9 +213,9 @@ def change_position(ui_node):
     for tile in G.tiles.values():
         tile.reset_colors()
 
-    move_tree_ui.ui_node = ui_node
-    node = ui_node.game_node
-    board = node.board()
+    G.move_tree_ui.ui_node = ui_node
+    G.node = ui_node.game_node
+    board = G.node.board()
     rebuild_board()
 
     if board.move_stack:
@@ -249,7 +260,7 @@ while running:
             running = False
         #check for key presses
         elif event.type == pygame.KEYDOWN:
-            current_ui_node = move_tree_ui.ui_node
+            current_ui_node = G.move_tree_ui.ui_node
             if current_ui_node is not None:
                 if event.key == pygame.K_LEFT:
                     if current_ui_node.parent is not None:
@@ -263,8 +274,8 @@ while running:
             #get the mouse position
             mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
 
-            if move_tree_ui.head is not None:
-                ui_nodes = move_tree_ui.head.get_children()
+            if G.move_tree_ui.head is not None:
+                ui_nodes = G.move_tree_ui.head.get_children()
                 for child in ui_nodes:
                     if child.get_clicked(mouse_pos):
                         change_position(child)
@@ -370,7 +381,7 @@ while running:
     if promotion_pending:
         draw_promotion_ui(screen)
 
-    move_tree_ui.update()
+    G.move_tree_ui.update()
 
     #display the screen
     pygame.display.flip()
