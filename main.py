@@ -51,7 +51,6 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 running: bool = True
 
-arrow = Arrow(screen, 18, 45)
 G.move_tree_ui = Left_Panel(screen)
 
 #-------------------------Function Definitions-------------------------
@@ -114,7 +113,7 @@ def execute_move(move, captured_piece) -> None:
     deselect()
 
     #get the next node
-    node = new_node(G.node, move)
+    node, correct_moves = new_node(G.node, move)
 
     #if we are in training mode
     if training:
@@ -123,13 +122,15 @@ def execute_move(move, captured_piece) -> None:
             #set the node
             G.node = node
 
+            #set up the timer for the trainer's response
             response_pending = True
             response_time = pygame.time.get_ticks() + RESPONSE_DELAY
 
         #if the move was wrong
         else:
-            #draw the arrow
-            print("arrow")
+            for m in correct_moves:
+                #draw the arrow
+                G.arrows.append(Arrow(screen, m.from_square, m.to_square))
             #cancel the move
             return
     #if we are not training
@@ -176,11 +177,13 @@ def execute_move(move, captured_piece) -> None:
 
 def new_node(parent, move) -> bool:
 
+    moves = []
     for child in parent.variations:
         if child.move == move:
-            return child
+            return child, None
+        moves.append(child.move)
     
-    return None
+    return None, moves
 
 def execute_trainer_move():
 
@@ -459,7 +462,8 @@ while running:
     for piece in G.pieces.values():
         piece.update()
 
-    arrow.update()
+    for arrow in G.arrows:
+        arrow.update()
 
     #if we are wiating on promotion, update the promotion ui
     if promotion_pending:
