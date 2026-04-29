@@ -1,7 +1,9 @@
 import pygame
+import random
+import time
 import chess
 import chess.pgn
-from settings import SCREEN_SIZE, TILE_SIZE, BOARD_START_X, BOARD_START_Y
+from settings import SCREEN_SIZE, TILE_SIZE, BOARD_START_X, BOARD_START_Y, RESPONSE_DELAY
 from piece import Piece
 from tile import Tile
 from ui import Left_Panel
@@ -9,27 +11,35 @@ from utils import get_square_from_coords, get_x_from_square, get_y_from_square, 
 import globals as G
 #------------------------------Globals------------------------------
 
-game = chess.pgn.Game()
+# game = chess.pgn.Game()
 
-game.headers["Event"] = "Opening Trainer"
-game.headers["Site"] = "My App"
-# game.headers["Date"] = ""
-game.headers["Round"] = "-"
-game.headers["White"] = "Student"
-game.headers["Black"] = "Wizzard Bot"
-game.headers["Result"] = "*"
+# game.headers["Event"] = "Opening Trainer"
+# game.headers["Site"] = "My App"
+# # game.headers["Date"] = ""
+# game.headers["Round"] = "-"
+# game.headers["White"] = "Student"
+# game.headers["Black"] = "Wizzard Bot"
+# game.headers["Result"] = "*"
+
+training = True #this will change later
+opening_fpath = "./openings/test.pgn"
+user_color = chess.WHITE
+
+with open(opening_fpath) as f:
+    game = chess.pgn.read_game(f)
 
 G.node = game
 
 board = chess.Board()
 
-promotion_pending = False
+promotion_pending: bool = False
 promotion_square = None
 promotion_color = None
 promotion_rects = []
 promotion_options = [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT]
 
-training = False
+response_time = None
+response_pending: bool = False
 
 #keep track of which piece is highlighted
 selected_piece = None
@@ -38,7 +48,7 @@ selected_piece = None
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
-running = True
+running: bool = True
 
 G.move_tree_ui = Left_Panel(screen)
 
@@ -95,9 +105,46 @@ def promote(move, piece_type) -> None:
     G.node = G.node.add_variation(move)
 
 def execute_move(move, captured_piece) -> None:
+
+    global response_pending, response_time
+
     #deselect the piece
     deselect()
 
+    #get the next node
+    node = new_node(G.node, move)
+
+    #if we are in training mode
+    if training:
+        #if the move is right
+        if node is not None:
+            #set the node
+            G.node = node
+
+            response_pending = True
+            response_time = pygame.time.get_ticks() + RESPONSE_DELAY
+
+        #if the move was wrong
+        else:
+            #draw the arrow
+            print("arrow")
+            #cancel the move
+            return
+    #if we are not training
+    else:
+        #if the node doesn't already exist
+        if node is None:
+            #create it
+            G.node = G.node.add_variation(move)
+            G.move_tree_ui.add_ui_node(G.node, move, board.san(move), board.turn)
+        #if the node already exists
+        else:
+            #change to it
+            G.node = node
+            for child in G.move_tree_ui.ui_node.children:
+                if child.game_node is node:
+                    G.move_tree_ui.ui_node = child
+                    break
     #check if a piece was captured
     if captured_piece is not None:
         #TODO capture SFX?
@@ -117,21 +164,13 @@ def execute_move(move, captured_piece) -> None:
     G.tiles[move.from_square].highlight_last_move()
     G.tiles[move.to_square].highlight_last_move()
 
-    #move the piece in the internal board
-    node = new_node(G.node, move)
-    if node is None:
-        G.node = G.node.add_variation(move)
-        G.move_tree_ui.add_ui_node(G.node, move, board.san(move), board.turn)
-    else:
-        G.node = node
-        for child in G.move_tree_ui.ui_node.children:
-            if child.game_node is node:
-                G.move_tree_ui.ui_node = child
-                break
-    board.push(move)
-
+    
+    
     #move the piece on the visual board
     G.pieces[move.from_square].update_pos(move.to_square)
+    
+    #move the piece on the internal board
+    board.push(move)
 
 def new_node(parent, move) -> bool:
 
@@ -140,7 +179,40 @@ def new_node(parent, move) -> bool:
             return child
     
     return None
-        
+
+def execute_trainer_move():
+
+    #pick the trainers move
+    node = random.choice(G.node.variations)
+    move = node.move
+
+    #check if a piece was captured
+    captured_piece = get_captured_piece(move)
+
+    if captured_piece is not None:
+        #TODO capture SFX?
+        #remove the captured piece
+        captured_piece.kill()
+        del G.pieces[captured_piece.square]
+
+    #if this isn't the first move
+    if board.move_stack:
+
+        #get the last move and undo it's highlights
+        last_move = board.peek()
+        G.tiles[last_move.from_square].reset_colors()
+        G.tiles[last_move.to_square].reset_colors()  
+
+    #highlight the move that was just made
+    G.tiles[move.from_square].highlight_last_move()
+    G.tiles[move.to_square].highlight_last_move()
+
+    #move the piece on the visual board
+    G.pieces[move.from_square].update_pos(move.to_square)
+    
+    #move the piece on the internal board
+    G.node = node
+    board.push(move)
 
 def deselect() -> None:
 
@@ -304,7 +376,7 @@ while running:
                 promotion_color = None
                 promotion_rects = []
 
-            #if were aren't waiting for promotion selection
+            #if the user can move
             else:
                 #get the square that got clicked
                 square = get_square_from_coords(mouse_pos[0], mouse_pos[1])
@@ -369,6 +441,11 @@ while running:
                                 #deselecte the selected piece
                                 deselect()
 
+    if response_pending and pygame.time.get_ticks() >= response_time:
+        execute_trainer_move()
+        response_pending = False
+
+    
     #fill the screen
     screen.fill("black")
 
@@ -384,6 +461,7 @@ while running:
     if promotion_pending:
         draw_promotion_ui(screen)
 
+    #update the left panel
     G.move_tree_ui.update()
 
     #display the screen
