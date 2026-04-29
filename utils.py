@@ -25,11 +25,19 @@ def get_square_from_coords(x: int, y: int):
     #return the square
     return chess.square(file, 7-rank)
 
-def get_x_from_square(square) -> int:
-    return BOARD_START_X + chess.square_file(square)*TILE_SIZE
+def get_x_from_square(square, get_center: bool = False) -> int:
+    n = 0
+    if get_center:
+        n = TILE_SIZE/2
 
-def get_y_from_square(square) -> int:
-    return BOARD_START_Y + (7 - chess.square_rank(square))*TILE_SIZE
+    return BOARD_START_X + chess.square_file(square)*TILE_SIZE + n
+
+def get_y_from_square(square, get_center: bool = False) -> int:
+    n = 0
+    if get_center:
+        n = TILE_SIZE/2
+
+    return BOARD_START_Y + (7 - chess.square_rank(square))*TILE_SIZE + n
 
 def is_tile_white(square) -> bool:
     return (chess.square_file(square) + chess.square_rank(square)) %2 == 0

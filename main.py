@@ -7,6 +7,7 @@ from settings import SCREEN_SIZE, TILE_SIZE, BOARD_START_X, BOARD_START_Y, RESPO
 from piece import Piece
 from tile import Tile
 from ui import Left_Panel
+from arrow import Arrow
 from utils import get_square_from_coords, get_x_from_square, get_y_from_square, piece_type_map
 import globals as G
 #------------------------------Globals------------------------------
@@ -50,6 +51,7 @@ screen = pygame.display.set_mode(SCREEN_SIZE)
 clock = pygame.time.Clock()
 running: bool = True
 
+arrow = Arrow(screen, 18, 45)
 G.move_tree_ui = Left_Panel(screen)
 
 #-------------------------Function Definitions-------------------------
@@ -456,6 +458,8 @@ while running:
     #update the visual pieces
     for piece in G.pieces.values():
         piece.update()
+
+    arrow.update()
 
     #if we are wiating on promotion, update the promotion ui
     if promotion_pending:
