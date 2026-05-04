@@ -6,7 +6,7 @@ import chess.pgn
 from settings import SCREEN_SIZE, TILE_SIZE, BOARD_START_X, BOARD_START_Y, RESPONSE_DELAY
 from piece import Piece
 from tile import Tile
-from ui import Left_Panel
+from ui import Left_Panel, Right_Panel
 from arrow import Arrow
 from utils import get_square_from_coords, get_x_from_square, get_y_from_square, piece_type_map
 import globals as G
@@ -52,6 +52,7 @@ clock = pygame.time.Clock()
 running: bool = True
 
 G.move_tree_ui = Left_Panel(screen)
+right = Right_Panel(screen)
 
 #-------------------------Function Definitions-------------------------
 def is_promotion(move) -> bool:
@@ -489,6 +490,9 @@ while running:
 
     #update the left panel
     G.move_tree_ui.update()
+
+    #update the right panel
+    right.update()
 
     #display the screen
     pygame.display.flip()

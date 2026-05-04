@@ -1,13 +1,14 @@
 import pygame
 import chess
-from settings import BOARD_START_X, SCREEN_SIZE, LEFT_PANEL_MARGIN, NEW_LINE_SIZE, BRANCH_INDENT_SIZE
+import os
+import globals as G
+from settings import BOARD_START_X, SCREEN_SIZE, LEFT_PANEL_MARGIN, NEW_LINE_SIZE, BRANCH_INDENT_SIZE, BOARD_SIZE
 from utils import width_of_space
 
 class Left_Panel():
     def __init__(self, screen) -> None:
         self.screen = screen
         self.font = pygame.font.SysFont('default', 30)
-        self.text = ""
         self.rect = pygame.Rect(0, 0, BOARD_START_X, SCREEN_SIZE[1])
         self.surface = pygame.Surface(self.rect.size)
         self.head = None
@@ -144,3 +145,47 @@ class UI_Node():
                 x = temp_x
 
         return x, y
+    
+class Right_Panel():
+    def __init__(self, screen):
+        self.screen = screen
+        self.font = pygame.font.SysFont("default", 30)
+        x = BOARD_START_X + BOARD_SIZE
+        self.rect = pygame.Rect(x, 0, SCREEN_SIZE[0] - x, SCREEN_SIZE[1])
+        self.screen_x_offset = x
+        self.surface = pygame.Surface(self.rect.size)
+        self.buttons = []
+
+        y = 0
+        for file_name in os.listdir(G.project_path):
+            path = os.path.join(G.project_path, file_name)
+            self.buttons.append(Opening_Button(self.surface, path, file_name, 0, y))
+            y += 30
+
+    def update(self):
+        self.surface.fill("black")
+
+        for button in self.buttons:
+            button.update()
+
+        self.screen.blit(self.surface, self.rect.topleft)     
+
+class Button():
+    def __init__(self, surface, path, file_name, x, y):
+        self.surface = surface
+        self.file = path
+        self.font = pygame.font.SysFont("default", 30)
+        self.text = self.font.render(file_name, True, (255, 255, 255))
+        self.rect = self.text.get_rect()
+        self.rect.topleft = (x, y)
+
+    def update(self):
+        self.surface.blit(self.text, self.rect.topleft)
+
+class Opening_Button(Button):
+    def __init__(self, surface, path, file_name, x, y):
+        super().__init__(surface, path, file_name, x, y)
+
+class Variation_Button(Button):
+    def __init__(self):
+        super().__init__()
