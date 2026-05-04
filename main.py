@@ -112,6 +112,9 @@ def execute_move(move, captured_piece) -> None:
     #deselect the piece
     deselect()
 
+    #delete all the arrows
+    G.arrows.clear()
+
     #get the next node
     node, correct_moves = new_node(G.node, move)
 
@@ -398,6 +401,14 @@ while running:
                         if piece is not None and piece.color == board.turn:
                             #select the piece
                             select(piece)
+                        #if there is no piece on the clicked square
+                        else:
+                            #loop through all the arrows
+                            for arrow in G.arrows:
+                                #if any are user created
+                                if arrow.user_created:
+                                    #delete them
+                                    G.arrows.remove(arrow)
 
                     #if there is a selected piece
                     else:
@@ -445,6 +456,13 @@ while running:
                             else:
                                 #deselecte the selected piece
                                 deselect()
+
+                                #loop through all the arrows
+                                for arrow in G.arrows:
+                                    #if any are user created
+                                    if arrow.user_created:
+                                        #delete them
+                                        G.arrows.remove(arrow)
 
     if response_pending and pygame.time.get_ticks() >= response_time:
         execute_trainer_move()

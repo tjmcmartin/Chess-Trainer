@@ -4,9 +4,10 @@ from utils import get_x_from_square, get_y_from_square
 from settings import ARROW_HEAD_HEIGHT, ARROW_HEAD_WIDTH, ARROW_SHAFT_WIDTH, ARROW_START_OFFSET, ARROW_COLOR
 
 class Arrow(pygame.sprite.Sprite):
-    def __init__(self, screen, from_square, to_square):
+    def __init__(self, screen, from_square, to_square, user_created = False):
         super().__init__()
         self.screen = screen
+        self.user_created = user_created
         self.from_coords = (get_x_from_square(from_square, True), get_y_from_square(from_square, True))
         self.to_coords = (get_x_from_square(to_square, True), get_y_from_square(to_square, True))
         
