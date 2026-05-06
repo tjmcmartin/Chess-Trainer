@@ -6,7 +6,7 @@ tiles = {}
 arrows = []
 
 #project directory
-project_path = Path(__file__).parent
+project_root = Path(__file__).parent
 
 #global trackers
 move_tree_ui = None
