@@ -22,7 +22,7 @@ import globals as G
 # game.headers["Black"] = "Wizzard Bot"
 # game.headers["Result"] = "*"
 
-training = True #this will change later
+training = False
 opening_fpath = "./openings/test.pgn"
 user_color = chess.WHITE
 
@@ -116,8 +116,10 @@ def execute_move(move, captured_piece) -> None:
     #delete all the arrows
     G.arrows.clear()
 
-    #get the next node
-    node, correct_moves = new_node(G.node, move)
+    node = None
+    if not isinstance(G.node, chess.pgn.Game):
+        #get the next node
+        node, correct_moves = new_node(G.node, move)
 
     #if we are in training mode
     if training:
