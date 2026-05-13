@@ -3,7 +3,7 @@ import chess
 import os
 import globals as G
 from settings import BOARD_START_X, SCREEN_SIZE, LEFT_PANEL_MARGIN, NEW_LINE_SIZE, BRANCH_INDENT_SIZE, BOARD_SIZE
-from utils import width_of_space
+from utils import width_of_space, global_to_right_panel_cords
 
 class Left_Panel():
     def __init__(self, screen) -> None:
@@ -184,6 +184,9 @@ class Button():
     def update(self):
         pygame.draw.rect(self.surface, (70, 90, 130), self.rect, border_radius=20)
         self.surface.blit(self.text, self.text_rect)
+    
+    def get_clicked(self, mouse_pos: tuple[int, int]) -> bool:
+        return self.rect.collidepoint(global_to_right_panel_cords(mouse_pos))
 
 class Opening_Button(Button):
     def __init__(self, surface, path, file_name, x, y):

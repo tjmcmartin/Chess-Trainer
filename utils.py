@@ -1,5 +1,5 @@
 import chess
-from settings import BOARD_START_X, BOARD_START_Y, TILE_SIZE
+from settings import BOARD_START_X, BOARD_START_Y, TILE_SIZE, BOARD_SIZE
 piece_type_map = {
     1: "pawn",
     2: "knight",
@@ -45,3 +45,7 @@ def is_tile_white(square) -> bool:
 def width_of_space(font) -> int:
     space = font.render(" ", True, (255, 255, 255))
     return space.get_width()
+
+def global_to_right_panel_cords(coordinate):
+    new_coordinate = (coordinate[0] - BOARD_START_X - BOARD_SIZE, coordinate[1])
+    return new_coordinate

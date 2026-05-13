@@ -52,7 +52,7 @@ clock = pygame.time.Clock()
 running: bool = True
 
 G.move_tree_ui = Left_Panel(screen)
-right = Right_Panel(screen)
+right_panel = Right_Panel(screen)
 
 #-------------------------Function Definitions-------------------------
 def is_promotion(move) -> bool:
@@ -365,6 +365,26 @@ while running:
                 for child in ui_nodes:
                     if child.get_clicked(mouse_pos):
                         change_position(child)
+                        break
+
+            #check if a ui button was clicked
+            for button in right_panel.openings:
+                if button.get_clicked(mouse_pos):
+                    print("found button!")
+                    #exit the loop
+                    break
+
+                for variation in button.variations:
+                    if variation.get_clicked(mouse_pos):
+                        print("found button!")
+                        #exit the loop
+                        break
+                #if no button was found
+                else:
+                    #go to the next set of buttons
+                    continue
+                #a button was found; exit the loop
+                break
 
             #if we are waiting on a promotion selection from the user
             if promotion_pending and selected_piece is not None and promotion_square is not None:
@@ -494,7 +514,7 @@ while running:
     G.move_tree_ui.update()
 
     #update the right panel
-    right.update()
+    right_panel.update()
 
     #display the screen
     pygame.display.flip()
